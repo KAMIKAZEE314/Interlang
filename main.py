@@ -1,192 +1,141 @@
 import sys
-stack = [0] #erstellt den stack
-opcodes = ["PUSH","POP","ADD","SUB","PRINT","READ","JUMP.EQ.0","JUMP.GT.0","HALT"]
-dateipfad = "Test.txt" #speichert den Dateipfad in einer Variable
-Debug = True
 
-stack.pop() #löscht die erste 0 im stack
+opcodes = ["PUSH","POP","READ","ADD","SUB","PRINT","HALT","JUMP.EQ.0"]
+debug = True
+Dateipfadabfrage = False
 
-def PUSH(number): #PUSH anweisung wird erstellt
-    stack.append(number)
+class Stack():
+    def __init__(self):
+        self.sp = 0
+        self.stack = []
+        for _ in range(0,64):
+            self.stack.append(None)
+        self.sp_target = self.stack[self.sp]
     
-def POP():
-    Wert = stack[len(stack) - 1]
-    stack.pop()
-    return Wert
-
-def ADD():
-    Wert1 = POP()
-    Wert2 = POP()
-    PUSH(int(Wert1) + int(Wert2))
+    def debug(self):
+        if debug:
+            print(f"pointer:{self.sp}")
+            print(f"Wert des Pointers:{self.sp_target}")
+            print(f"Stack{self.stack}")
+        
+    def PUSH(self, raw_number):
+        try:
+            self.number = int(raw_number)
+        except ValueError:
+            print("\033[31m" + f"ValueError: Zeile:{jetzige_Zeile + 1} Argument nimmt nur int nicht str" + "\033[0m")
+            sys.exit()
+        
+        self.stack[self.sp] = self.number
+        self.sp += 1
     
-def SUB():
-    Wert1 = POP()
-    Wert2 = POP()
-    PUSH(int(Wert2) - int(Wert1))
+    def POP(self):
+        self.sp -= 1
+        self.vorher = self.stack[self.sp]
+        self.stack[self.sp] = None
+        return self.vorher
     
+    def READ(self):
+        self.IO = input(":")
+        self.PUSH(self.IO)
+        
+    def ADD(self):
+        self.Summand1 = self.POP()
+        self.Summand2 = self.POP()
+        self.PUSH(self.Summand1 + self.Summand2)
+    
+    def SUB(self):
+        self.Minuend = self.POP()
+        self.Subtrahend = self.POP()
+        self.PUSH(self.Subtrahend - self.Minuend)
+        
 def PRINT(string):
     print(string)
     
-def READ():
-    IO = input(":")
-    PUSH(IO)
-    
-def JUMPEQO(label_unprocessed):
-    if stack[len(stack) - 1] == 0:
-        labelHere = False
-        for Label in Labels:
-            (zeilenangabe,Labelname,code) = Label
-            label = f"/{label_unprocessed}/"
-            if Labelname == label:
-                labelHere = True
-                break
-        if labelHere:
-            for operation in code:
-                operations_teil = operation[0]
-                if not operations_teil in opcodes:
-                    print("Falsche Operation!")
-                    break
-                elif operations_teil == "PUSH":
-                    PUSH(operation[1])
-                elif operations_teil == "POP":
-                    POP()
-                elif operations_teil == "ADD":
-                    ADD()
-                elif operations_teil == "SUB":
-                    SUB()
-                elif operations_teil == "PRINT":
-                    PRINT(operation[1])
-                elif operations_teil == "READ":
-                    READ()
-                elif operations_teil == "JUMP.EQ.0":
-                    JUMPEQO(operation[1])
-                elif operations_teil == "JUMP.GT.0":
-                    JUMPGTO(operation[1])
-                elif operations_teil == "HALT":
-                    HALT()
-
-def JUMPGTO(label_unprocessed):
-    if stack[len(stack) - 1] > 0:
-        labelHere = False
-        for Label in Labels:
-            (zeilenangabe,Labelname,code) = Label
-            label = f"/{label_unprocessed}/"
-            if Labelname == label:
-                labelHere = True
-                break
-        if labelHere:
-            for operation in code:
-                operations_teil = operation[0]
-                if not operations_teil in opcodes:
-                    print("Falsche Operation!")
-                    break
-                elif operations_teil == "PUSH":
-                    PUSH(operation[1])
-                elif operations_teil == "POP":
-                    POP()
-                elif operations_teil == "ADD":
-                    ADD()
-                elif operations_teil == "SUB":
-                    SUB()
-                elif operations_teil == "PRINT":
-                    PRINT(operation[1])
-                elif operations_teil == "READ":
-                    READ()
-                elif operations_teil == "JUMP.EQ.0":
-                    JUMPEQO(operation[1])
-                elif operations_teil == "JUMP.GT.0":
-                    JUMPGTO(operation[1])
-                elif operations_teil == "HALT":
-                    HALT()
-                    
 def HALT():
     sys.exit()
-                    
-with open(dateipfad, "r") as datei: #öffnet diesen Dateipfad mit Lese-berechtigung
-    Zeilen_raw = datei.readlines() #speichert die Zeilen in einer Liste
+                
+stack = Stack()
 
-if Debug:
-    print(Zeilen_raw) #DEBUGGING: gibt die Liste aus
+# Hier werden die Zeilen aus der .txt gespeichert
+DateipfadError = True
+while DateipfadError:
+    try:
+        if Dateipfadabfrage:
+            dateipfad = input("Dateipfad:")
+        else:
+            dateipfad = "/home/linux-lover1/Programmiersprache/Test.txt"
 
-Zeilen = []
+        with open(dateipfad, "r") as datei:
+            Zeilen = datei.readlines()
+    except FileNotFoundError:
+        print("\033[31m" + f"FileNotFoundError: Dateipfad gibt es nicht: {dateipfad}" + "\033[0m")
+    else:
+        DateipfadError = False
+        
+if debug:
+    print(f"Pure Zeilen:{Zeilen}")
+
+# Hier werden die Zeilen zu operationen verarbeitet
 Labels = []
-Zeilenangabe = 0
-inLabel = False
-inLabelCode = []
-inLabelCodeOperation = []
-for Zeile in Zeilen_raw:
+operationen = []
+Zeilennummer = 1
+for Zeile in Zeilen:
+    Zeilennummer += 1
     operation = []
     operations_teil = ""
-    Zeilenangabe += 1
-    inString = False
-    label = False
+    skipAppend = False
+    isString = False
     for letter in Zeile:
-        if letter != " " and letter != ";" and letter != "/" and letter != "\\" and letter != "\"":
+        if letter != " " and letter != "\n" and letter != "\"" and letter != ":":
             operations_teil += letter
         elif letter == " ":
-            if not inLabel and not inString:
+            if not isString:
                 operation.append(operations_teil)
                 operations_teil = ""
-            elif inLabel:
-                inLabelCodeOperation.append(operations_teil)
-                operations_teil = ""
-            elif inString:
+            else:
                 operations_teil += " "
-        elif letter == "/":
-            label = True
-            inLabel = True
-            if "/" in operations_teil:
-                operations_teil += letter
-                Labels.append([Zeilenangabe,operations_teil])
-                break
-            else:
-                operations_teil += letter
-        elif letter == "\\": #TO-DO: End LAbel fertig machen sowie der JUMP.EQ.0 command
-            inLabel = False
-            if "\\" in operations_teil:
-                label = Labels[len(Labels) - 1]
-                label.append(inLabelCode)
-                inLabelCode = []
-            else:
-                operations_teil += "\\"
         elif letter == "\"":
-            if inString:
-                inString = False
+            if isString:
+                isString = False
             else:
-                inString = True
-        elif letter == ";":
-            if not inLabel:
-                operation.append(operations_teil)
+                isString = True
+        elif letter == ":":
+            Labels.append([Zeilennummer,operations_teil])
+            skipAppend = True
+        elif letter == "\n":
+            if not Zeile == "\n":
+                operation.append(operations_teil)          
             else:
-                inLabelCodeOperation.append(operations_teil)
-                inLabelCode.append(inLabelCodeOperation)
+                skipAppend = True
             break
-    if not label: 
-        Zeilen.append(operation)
-    if not Zeilen[len(Zeilen) - 1]:
-        
-if Debug:
-    print(Zeilen)
+    if not skipAppend:
+        operationen.append(operation)
 
-jetzigeZeile = 0
-while jetzigeZeile <= len(Zeilen) - 1:
-    operation = Zeilen[jetzigeZeile]
+if debug:
+    print(f"Operationen:{operationen}")
+    print(f"Labels:{Labels}")
+    
+# Hier werden die Operationen ausgefürt
+jetzige_Zeile = 0
+while jetzige_Zeile <= len(operationen) - 1:
+    operation = operationen[jetzige_Zeile]
     operations_teil = operation[0]
     if not operations_teil in opcodes:
-        print("Falsche Operation!")
-        break
-    elif operations_teil == "PUSH":PUSH(operation[1])
-    elif operations_teil == "POP":POP()
-    elif operations_teil == "ADD":ADD()
-    elif operations_teil == "SUB":SUB()
-    elif operations_teil == "PRINT":PRINT(operation)
-    elif operations_teil == "READ":READ()
-    elif operations_teil == "JUMP.EQ.0":JUMPEQO(operation[1])
-    elif operations_teil == "JUMP.GT.0":JUMPGTO(operation[1])
-    elif operations_teil == "HALT":HAlT()
-    jetzigeZeile += 1
+        print("\033[31m" + f"OperationError: Zeile:{jetzige_Zeile + 1} Operation {operations_teil} gibt es nicht" + "\033[0m")
+    elif operations_teil == "PUSH":
+        stack.PUSH(operation[1])
+    elif operations_teil == "POP":
+        stack.POP()
+    elif operations_teil == "READ":
+        stack.READ()
+    elif operations_teil == "ADD":
+        stack.ADD()
+    elif operations_teil == "SUB":
+        stack.SUB()
+    elif operations_teil == "PRINT":
+        PRINT(operation[1])
+    elif operations_teil == "HALT":
+        HALT()
+    jetzige_Zeile += 1
 
-if Debug:
-    print(stack)
-    print(Labels)
-
+stack.debug()

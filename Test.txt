@@ -1,3 +1,5 @@
 PRINT "Hello"
 HALT
-PRINT "HALT doesn't work"
+ls:
+PRINT "Label"
+END ls
