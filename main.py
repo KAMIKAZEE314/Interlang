@@ -79,18 +79,26 @@ if debug:
 Labels = []
 operationen = []
 Zeilennummer = 1
+<<<<<<< HEAD
 inLabel = False
 inLabelCode = []
+=======
+>>>>>>> ac0f5c0efbe7c57cfb6f201373b4a41ce9674afa
 for Zeile in Zeilen:
     Zeilennummer += 1
     operation = []
     operations_teil = ""
     skipAppend = False
     isString = False
+<<<<<<< HEAD
     isLabel = False
     isEndLabel = False
     for letter in Zeile:
         if letter != " " and letter != "\n" and letter != "\"" and letter != ":" and letter != ";":
+=======
+    for letter in Zeile:
+        if letter != " " and letter != "\n" and letter != "\"" and letter != ":":
+>>>>>>> ac0f5c0efbe7c57cfb6f201373b4a41ce9674afa
             operations_teil += letter
         elif letter == " ":
             if not isString:
@@ -104,6 +112,7 @@ for Zeile in Zeilen:
             else:
                 isString = True
         elif letter == ":":
+<<<<<<< HEAD
             if not inLabel:
                 Labels.append([Zeilennummer,operations_teil])
                 inLabel = True
@@ -137,6 +146,18 @@ for Zeile in Zeilen:
         print(f"Operations teil:{operations_teil}")
         print(f"Operation:{operation}")
         print(f"Lablel Code:{inLabelCode}")
+=======
+            Labels.append([Zeilennummer,operations_teil])
+            skipAppend = True
+        elif letter == "\n":
+            if not Zeile == "\n":
+                operation.append(operations_teil)          
+            else:
+                skipAppend = True
+            break
+    if not skipAppend:
+        operationen.append(operation)
+>>>>>>> ac0f5c0efbe7c57cfb6f201373b4a41ce9674afa
 
 if debug:
     print(f"Operationen:{operationen}")
