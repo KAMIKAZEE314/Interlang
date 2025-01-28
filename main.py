@@ -79,14 +79,18 @@ if debug:
 Labels = []
 operationen = []
 Zeilennummer = 1
+inLabel = False
+inLabelCode = []
 for Zeile in Zeilen:
     Zeilennummer += 1
     operation = []
     operations_teil = ""
     skipAppend = False
     isString = False
+    isLabel = False
+    isEndLabel = False
     for letter in Zeile:
-        if letter != " " and letter != "\n" and letter != "\"" and letter != ":":
+        if letter != " " and letter != "\n" and letter != "\"" and letter != ":" and letter != ";":
             operations_teil += letter
         elif letter == " ":
             if not isString:
@@ -100,16 +104,39 @@ for Zeile in Zeilen:
             else:
                 isString = True
         elif letter == ":":
-            Labels.append([Zeilennummer,operations_teil])
-            skipAppend = True
-        elif letter == "\n":
-            if not Zeile == "\n":
-                operation.append(operations_teil)          
+            if not inLabel:
+                Labels.append([Zeilennummer,operations_teil])
+                inLabel = True
+                isLabel = True
+        elif letter == ";":
+            if not inLabel:
+                print("\033[31m" + f"LabelEndError: Zeile:{Zeilennummer} Label wurde beendet, aber nicht gestartet" + "\033[0m")
             else:
+                isEndLabel = True
+                isLabel = True
+                for Label in Labels:
+                    [Zeilenangabe, Labelname] = Label
+                    if Labelname == operations_teil:
+                        Label.append(Zeilennummer)
+        elif letter == "\n":
+            if Zeile != "\n" and not inLabel:
+                operation.append(operations_teil)          
+            elif Zeile == "\n":
+                skipAppend = True
+            elif inLabel:
+                if not isLabel:
+                    operation.append(operations_teil)
+                else:
+                    pass
                 skipAppend = True
             break
-    if not skipAppend:
+    if not skipAppend and not isLabel:
         operationen.append(operation)
+    elif inLabel and not isLabel:
+        inLabelCode.append(operation)
+        print(f"Operations teil:{operations_teil}")
+        print(f"Operation:{operation}")
+        print(f"Lablel Code:{inLabelCode}")
 
 if debug:
     print(f"Operationen:{operationen}")

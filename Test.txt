@@ -1,5 +1,3 @@
-PRINT "Hello"
-HALT
 ls:
-PRINT "Label"
-END ls
+PRINT "6"
+ls;
