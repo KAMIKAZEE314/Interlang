@@ -1,8 +1,8 @@
 import sys
 
 opcodes = ["PUSH","POP","READ","ADD","SUB","PRINT","HALT","JUMP.EQ.0"]
-debug = True
-Dateipfadabfrage = False
+debug = False
+Dateipfadabfrage = True
 
 class Stack():
     def __init__(self):
