@@ -1,3 +1,4 @@
 ls:
 PRINT "6"
+READ
 ls;

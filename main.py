@@ -117,7 +117,7 @@ for Zeile in Zeilen:
                 for Label in Labels:
                     [Zeilenangabe, Labelname] = Label
                     if Labelname == operations_teil:
-                        Label.append(Zeilennummer)
+                        Label.append(inLabelCode)
         elif letter == "\n":
             if Zeile != "\n" and not inLabel:
                 operation.append(operations_teil)          
