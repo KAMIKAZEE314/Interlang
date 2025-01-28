@@ -1,4 +1,3 @@
-READ
-READ
-SUB
-PRINT "Yaay"
+PRINT "Hello"
+HALT
+PRINT "HALT doesn't work"
