@@ -48,6 +48,19 @@ class Stack():
         self.Subtrahend = self.POP()
         self.PUSH(self.Subtrahend - self.Minuend)
         
+    def JUMPEQO(self, zielLabelname):
+        LabelHere = False
+        Wert1 = self.stack[self.sp - 1]
+        if Wert1 == 0:
+            for Label in Labels:
+                [Zeilenangabe, Labelname, LabelCode] = Label
+                if Labelname == zielLabelname:
+                    LabelHere = True
+                    break
+            if not LabelHere:
+                print("\033[31m" + f"LabelNotFoundError: Zeile:{jetzige_Zeile} Label \"{zielLabelname}\" gibt es nicht" + "\033[0m")
+            Operationen_ausführen(LabelCode)
+            
 def PRINT(string):
     print(string)
     
@@ -134,36 +147,41 @@ for Zeile in Zeilen:
         operationen.append(operation)
     elif inLabel and not isLabel:
         inLabelCode.append(operation)
-        print(f"Operations teil:{operations_teil}")
-        print(f"Operation:{operation}")
-        print(f"Label Code:{inLabelCode}")
+        if debug:
+            print(f"Operations teil:{operations_teil}")
+            print(f"Operation:{operation}")
+            print(f"Label Code:{inLabelCode}")
 
 if debug:
     print(f"Operationen:{operationen}")
     print(f"Labels:{Labels}")
     
 # Hier werden die Operationen ausgefürt
-jetzige_Zeile = 0
-while jetzige_Zeile <= len(operationen) - 1:
-    operation = operationen[jetzige_Zeile]
-    operations_teil = operation[0]
-    if not operations_teil in opcodes:
-        print("\033[31m" + f"OperationError: Zeile:{jetzige_Zeile + 1} Operation {operations_teil} gibt es nicht" + "\033[0m")
-    elif operations_teil == "PUSH":
-        stack.PUSH(operation[1])
-    elif operations_teil == "POP":
-        stack.POP()
-    elif operations_teil == "READ":
-        stack.READ()
-    elif operations_teil == "ADD":
-        stack.ADD()
-    elif operations_teil == "SUB":
-        stack.SUB()
-    elif operations_teil == "PRINT":
-        PRINT(operation[1])
-    elif operations_teil == "HALT":
-        HALT()
-    jetzige_Zeile += 1
+def Operationen_ausführen(operationen):
+    jetzige_Zeile = 0
+    while jetzige_Zeile <= len(operationen) - 1:
+        operation = operationen[jetzige_Zeile]
+        operations_teil = operation[0]
+        if not operations_teil in opcodes:
+            print("\033[31m" + f"OperationError: Zeile:{jetzige_Zeile + 1} Operation {operations_teil} gibt es nicht" + "\033[0m")
+        elif operations_teil == "PUSH":
+            stack.PUSH(operation[1])
+        elif operations_teil == "POP":
+            stack.POP()
+        elif operations_teil == "READ":
+            stack.READ()
+        elif operations_teil == "ADD":
+            stack.ADD()
+        elif operations_teil == "SUB":
+            stack.SUB()
+        elif operations_teil == "PRINT":
+            PRINT(operation[1])
+        elif operations_teil == "HALT":
+            HALT()
+        elif operations_teil == "JUMP.EQ.0":
+            stack.JUMPEQO(operation[1])
+        jetzige_Zeile += 1
+        
+Operationen_ausführen(operationen)
 
 stack.debug()
-
