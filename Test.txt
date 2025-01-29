@@ -1,6 +1,5 @@
 READ
-JUMP.GT.0 ls
 
-ls:
-PRINT "greater than zero"
-ls;
+var=39
+
+PUSH var
