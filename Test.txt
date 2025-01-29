@@ -1,4 +1,6 @@
-ls:
-PRINT "6"
 READ
+JUMP.GT.0 ls
+
+ls:
+PRINT "greater than zero"
 ls;
