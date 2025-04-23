@@ -13,6 +13,8 @@ class Stack():
         self.sp = 0
     def PUSH(self, num):
         try:
+            num = int(Variablen.get(num))
+        except KeyError:
             num = int(num)
         except ValueError:
             print(f"{Color.RED} ArgumentFehler: die PUSH Anweisung nimmt nur integers!!{Color.OFF}")
