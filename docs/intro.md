@@ -1,4 +1,4 @@
-Hello, I am the creator of Interlang. Interlang is my programming language in Python. I created this programming language because I want to learn more about how programming languages work.
+Hello, I am the creator of Interlang. Interlang is my programming language in Python. I created this programming language because I wanted to learn more about how programming languages work.
 
 Interlang is as the name says an interpreted language. It is stack based and still under development so it would be very important to me that you support me <3.
 
