@@ -1,5 +1,0 @@
-READ
-
-var=39
-
-PUSH var
