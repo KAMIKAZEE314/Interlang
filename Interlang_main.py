@@ -1,7 +1,22 @@
 import sys
 from colorist import Color
 
-OpCodes = ["PUSH", "POP", "ADD", "SUB", "HALT", "READ", "PRINT", "JUMP.EQ.0", "JUMP.GT.0", "JUMP.LT.0", "JUMP.NE.0", "VAR"]
+OpCodes = ["PUSH",
+           "POP",
+           "ADD",
+           "SUB",
+           "HALT",
+           "READ",
+           "PRINT",
+           "JUMP",
+           "JUMP.EQ",
+           "JUMP.GT",
+           "JUMP.LT",
+           "JUMP.NE",
+           "VAR",
+           "TOP",
+           "DUP"
+        ]
 debug = True
 Dateipfadabfrage = False
 
@@ -13,7 +28,7 @@ class Stack():
         self.sp = 0
     def PUSH(self, num):
         try:
-            num = int(Variablen.get(num))
+            num = int(Variablen[num])
         except KeyError:
             num = int(num)
         except ValueError:
@@ -29,49 +44,71 @@ class Stack():
     def ADD(self):
         self.PUSH(self.POP() + self.POP())
     def SUB(self):
-        self.PUSH(self.POP() - self.POP())
+        wert2 = self.POP()
+        wer1 = self.POP()
+        self.PUSH(wert1 - wert2)
     def READ(self):
         try:
             self.PUSH(int(input(":")))
         except ValueError:
             print(f"{Color.RED}ValueError: READ Anweisung nimmt nur Integers!!{Color.OFF}")
             sys.exit()
-    def JUMPEQO(self, input_label):
+    def JUMPEQ(self, input_label, zahl):
         try:
             InLabelCode = Labels[input_label]
         except KeyError:
             print(f"{Color.RED}LabelNotFoundError: Label {input_label} gibt es nicht!!{Color.OFF}")
             sys.exit()
-        if self.stack[self.sp - 1] == 0:
-            for Operation in InLabelCode:
-                Operation_ausfueren(*Operation)
-    def JUMPGTO(self, input_label):
+        if self.stack[self.sp - 1] == zahl:
+            Operationen.extend(InLabelCode)
+    def JUMPGT(self, input_label, zahl):
         try:
             InLabelCode = Labels[input_label]
         except KeyError:
             print(f"{Color.RED}LabelNotFoundError: Label {input_label} gibt es nicht!!{Color.OFF}")
             sys.exit()
-        if self.stack[self.sp - 1] > 0:
+        if self.stack[self.sp - 1] > zahl:
             for Operation in InLabelCode:
                 Operation_ausfueren(*Operation)
-    def JUMPLTO(self, input_label):
+    def JUMPLT(self, input_label, zahl):
         try:
             InLabelCode = Labels[input_label]
         except KeyError:
             print(f"{Color.RED}LabelNotFoundError: Label {input_label} gibt es nicht!!{Color.OFF}")
             sys.exit()
-        if self.stack[self.sp - 1] < 0:
+        if self.stack[self.sp - 1] < zahl:
             for Operation in InLabelCode:
                 Operation_ausfueren(*Operation)
-    def JUMPNEO(self, input_label):
+    def JUMPNE(self, input_label, zahl):
         try:
             InLabelCode = Labels[input_label]
         except KeyError:
             print(f"{Color.RED}LabelNotFoundError: Label {input_label} gibt es nicht!!{Color.OFF}")
             sys.exit()
-        if self.stack[self.sp - 1] != 0:
+        if self.stack[self.sp - 1] != zahl:
             for Operation in InLabelCode:
                 Operation_ausfueren(*Operation)
+    def JUMP(self, input_label):
+        try:
+            InLabelCode = Labels[input_label]
+        except KeyError:
+            print(f"{Color.RED}LabelNotFoundError: Label {input_label} gibt es nicht!!{Color.OFF}")
+            sys.exit()
+        for Operation in InLabelCode:
+            Operation_ausfueren(*Operation)
+    def TOP(self, var):
+        try:
+            Variablen[var] = self.stack[self.sp - 1]
+        except IndexError:
+            print(f"{Color.RED}StackError: Stack ist leer!!{Color.OFF}")
+            sys.exit()
+    def DUP(self):
+        try:
+            self.stack[self.sp] = self.stack[self.sp - 1]
+            self.sp += 1
+        except IndexError:
+            print(f"{Color.RED}StackError: Stack ist leer!!{Color.OFF}")
+            sys.exit()
         
 stack = Stack()
 
@@ -81,7 +118,7 @@ def VAR(name, wert):
     Variablen[name] = wert
 def PRINT(text):
     try:
-        text = Variablen.get(text)
+        text = Variablen[text]
     except KeyError:
         pass
     finally:
@@ -105,12 +142,50 @@ while DateipfadError:
 if debug:
     print(f"Pure Zeilen:{Zeilen}")
 
+def Operation_ausfueren(kopf, pars):
+    if kopf in OpCodes:
+        if kopf == "PUSH":
+            stack.PUSH(pars[0])
+        elif kopf == "POP":
+            stack.POP()
+        elif kopf == "ADD":
+            stack.ADD()
+        elif kopf == "SUB":
+            stack.SUB()
+        elif kopf == "HALT":
+            HALT()
+        elif kopf == "READ":
+            stack.READ()
+        elif kopf == "PRINT":
+            PRINT(pars[0])
+        elif kopf == "JUMP":
+            stack.JUMP(pars[0])
+        elif kopf == "JUMP.EQ":
+            stack.JUMPEQ(pars[0], pars[1])
+        elif kopf == "JUMP.GT":
+            stack.JUMPGT(pars[0], pars[1])
+        elif kopf == "JUMP.LT":
+            stack.JUMPLT(pars[0], pars[1])
+        elif kopf == "JUMP.NE":
+            stack.JUMPNE(pars[0], pars[1])
+        elif kopf == "VAR":
+            VAR(pars[0], pars[1],)
+        elif kopf == "TOP":
+            stack.TOP(pars[0])
+        elif kopf == "DUP":
+            stack.DUP()
+    else:
+        print(f"{Color.RED}OperationsError: Operation {kopf} gibt es nicht{Color.OFF}")
+        sys.exit()
+
 Variablen = {}
 Labels = {}
 isInLabel = False
 Label_kopf = ""
 inLabelCode = []
 for Zeile in Zeilen:
+    Operationen = []
+    Operation = ()
     Operations_kopf = ""
     Parameter = []
     Operations_teil = ""
@@ -166,37 +241,11 @@ for Zeile in Zeilen:
     if skipLine:
         continue
     
-    def Operation_ausfueren(kopf, pars):
-        if kopf in OpCodes:
-            if kopf == "PUSH":
-                stack.PUSH(pars[0])
-            elif kopf == "POP":
-                stack.POP()
-            elif kopf == "ADD":
-                stack.ADD()
-            elif kopf == "SUB":
-                stack.SUB()
-            elif kopf == "HALT":
-                HALT()
-            elif kopf == "READ":
-                stack.READ()
-            elif kopf == "PRINT":
-                PRINT(pars[0])
-            elif kopf == "JUMP.EQ.0":
-                stack.JUMPEQO(pars[0])
-            elif kopf == "JUMP.GT.0":
-                stack.JUMPGTO(pars[0])
-            elif kopf == "JUMP.LT.0":
-                stack.JUMPLTO(pars[0])
-            elif kopf == "JUMP.NE.0":
-                stack.JUMPNEO(pars[0])
-            elif kopf == "VAR":
-                VAR(pars[0], pars[1])
-        else:
-            print(f"{Color.RED}OperationsError: Operation {kopf} gibt es nicht{Color.OFF}")
-            sys.exit()
+    Operation = (Operations_kopf, Parameter)
+    Operationen.append(Operation)
     
-    Operation_ausfueren(Operations_kopf, Parameter)
+    for Operation in Operationen:
+        Operation_ausfueren(*Operation)
 
 if debug:
     print(stack.stack)
